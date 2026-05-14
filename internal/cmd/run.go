@@ -149,6 +149,8 @@ func executeScript(name string, script config.Script, timeout int, cfg *config.C
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 
+	cmd.Env = os.Environ()
+
 	for key, value := range cfg.Project.Env {
 		cmd.Env = append(cmd.Env, fmt.Sprintf("%s=%s", key, value))
 	}

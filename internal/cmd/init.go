@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
 
@@ -23,7 +24,7 @@ func newInitCmd() *cobra.Command {
 		Run: runInit,
 	}
 
-	cmd.Flags().StringP("name", "n", "", "项目名称")
+	cmd.Flags().String("name", "", "项目名称")
 	cmd.Flags().StringP("template", "t", "", "项目模板 (frontend, backend, fullstack, cli, library)")
 	cmd.Flags().StringP("language", "l", "", "编程语言")
 	cmd.Flags().StringP("author", "a", "", "作者")
@@ -176,14 +177,17 @@ func initGitRepo(dir, projectName string) error {
 		return nil
 	}
 
-	if err := os.MkdirAll(filepath.Join(dir, ".git"), 0755); err != nil {
-		return err
-	}
-
 	readmePath := filepath.Join(dir, "README.md")
 	if _, err := os.Stat(readmePath); err != nil {
 		readmeContent := fmt.Sprintf("# %s\n\n项目描述", projectName)
 		os.WriteFile(readmePath, []byte(readmeContent), 0644)
+	}
+
+	cmd := exec.Command("git", "init")
+	cmd.Dir = dir
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("git init 失败: %v: %s", err, string(output))
 	}
 
 	return nil

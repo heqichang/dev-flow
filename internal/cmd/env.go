@@ -8,9 +8,11 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/devflow/devflow/internal/config"
 	"github.com/devflow/devflow/internal/ui"
 	"github.com/joho/godotenv"
 	"github.com/spf13/cobra"
+	"gopkg.in/yaml.v3"
 )
 
 func newEnvCmd() *cobra.Command {
@@ -213,6 +215,23 @@ func newEnvCheckCmd() *cobra.Command {
 				return
 			}
 
+			data, err := os.ReadFile(devflowConfigPath)
+			if err != nil {
+				ui.Error(fmt.Sprintf("读取配置文件失败: %v", err))
+				os.Exit(1)
+			}
+
+			var cfg config.ProjectConfig
+			if err := yaml.Unmarshal(data, &cfg); err != nil {
+				ui.Error(fmt.Sprintf("解析配置文件失败: %v", err))
+				os.Exit(1)
+			}
+
+			if len(cfg.RequiredEnv) == 0 {
+				ui.Info("未配置必需的环境变量 (requiredEnv)")
+				return
+			}
+
 			envPath := filepath.Join(wd, ".env")
 			var env map[string]string
 			if _, err := os.Stat(envPath); os.IsNotExist(err) {
@@ -228,8 +247,13 @@ func newEnvCheckCmd() *cobra.Command {
 			ui.Info("检查必需环境变量...")
 			missing := []string{}
 
-			for key := range env {
-				ui.Success(fmt.Sprintf("✓ %s 已设置", key))
+			for _, requiredKey := range cfg.RequiredEnv {
+				if _, exists := env[requiredKey]; exists {
+					ui.Success(fmt.Sprintf("✓ %s 已设置", requiredKey))
+				} else {
+					ui.Error(fmt.Sprintf("✗ %s 未设置", requiredKey))
+					missing = append(missing, requiredKey)
+				}
 			}
 
 			if len(missing) == 0 {

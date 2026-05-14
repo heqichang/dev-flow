@@ -34,7 +34,7 @@ func Warning(msg string) {
 
 func Header(msg string) {
 	fmt.Println(HeaderColor("\n" + msg))
-	fmt.Println(HeaderColor(strings.Repeat("=", len(msg)))
+	fmt.Println(HeaderColor(strings.Repeat("=", len(msg))))
 }
 
 func Title(msg string) {

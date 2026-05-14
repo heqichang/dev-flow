@@ -85,6 +85,7 @@ func (t *Template) processTemplate(content string) string {
 }
 
 func (t *Template) getReadme() string {
+	backtick := "`"
 	return `# {{PROJECT_NAME}}
 
 {{PROJECT_NAME}} 是一个 {{LANGUAGE}} 项目。
@@ -97,7 +98,7 @@ func (t *Template) getReadme() string {
 
 使用 DevFlow CLI 管理项目:
 
-\`\`\`bash
+` + backtick + backtick + backtick + `bash
 # 查看可用脚本
 devflow run
 
@@ -109,7 +110,7 @@ devflow run build
 
 # 运行测试
 devflow run test
-\`\`\`
+` + backtick + backtick + backtick + `
 
 ## 作者
 
@@ -379,7 +380,7 @@ func (t *Template) getLibraryTemplate() map[string]string {
 
 module.exports = {
   greet: function(name) {
-    return \`Hello, \${name}!\`;
+    return 'Hello, ' + name + '!';
   },
   
   version: function() {

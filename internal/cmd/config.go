@@ -33,18 +33,19 @@ func newConfigCmd() *cobra.Command {
 }
 
 func newConfigShowCmd() *cobra.Command {
-	return &cobra.Command{
+	cmd := &cobra.Command{
 		Use:   "show",
 		Short: "显示当前配置",
 		Run: func(cmd *cobra.Command, args []string) {
-			env := config.Development
+			envFlag, _ := cmd.Flags().GetString("env")
+			env := parseEnvironment(envFlag)
 			cfg, err := config.LoadConfig(env)
 			if err != nil {
 				ui.Error(err.Error())
 				os.Exit(1)
 			}
 
-			ui.Header("项目配置")
+			ui.Header(fmt.Sprintf("项目配置 (%s)", env))
 			ui.Info(fmt.Sprintf("项目名称: %s", cfg.Project.ProjectName))
 			ui.Info(fmt.Sprintf("版本: %s", cfg.Project.Version))
 			ui.Info(fmt.Sprintf("语言: %s", cfg.Project.Language))
@@ -67,15 +68,18 @@ func newConfigShowCmd() *cobra.Command {
 			}
 		},
 	}
+	cmd.Flags().StringP("env", "e", "development", "运行环境 (development/staging/production)")
+	return cmd
 }
 
 func newConfigGetCmd() *cobra.Command {
-	return &cobra.Command{
+	cmd := &cobra.Command{
 		Use:   "get [key]",
 		Short: "获取单个配置项",
 		Args:  cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
-			env := config.Development
+			envFlag, _ := cmd.Flags().GetString("env")
+			env := parseEnvironment(envFlag)
 			cfg, err := config.LoadConfig(env)
 			if err != nil {
 				ui.Error(err.Error())
@@ -106,6 +110,8 @@ func newConfigGetCmd() *cobra.Command {
 			fmt.Println(value)
 		},
 	}
+	cmd.Flags().StringP("env", "e", "development", "运行环境 (development/staging/production)")
+	return cmd
 }
 
 func newConfigSetCmd() *cobra.Command {
@@ -165,18 +171,36 @@ func newConfigSetCmd() *cobra.Command {
 }
 
 func newConfigValidateCmd() *cobra.Command {
-	return &cobra.Command{
+	cmd := &cobra.Command{
 		Use:   "validate",
 		Short: "验证配置文件",
 		Run: func(cmd *cobra.Command, args []string) {
-			env := config.Development
+			envFlag, _ := cmd.Flags().GetString("env")
+			env := parseEnvironment(envFlag)
 			_, err := config.LoadConfig(env)
 			if err != nil {
-				ui.Error(fmt.Sprintf("配置验证失败: %v", err))
+				ui.Error(fmt.Sprintf("配置验证失败 (%s): %v", env, err))
 				os.Exit(1)
 			}
 
-			ui.Success("配置文件验证通过")
+			ui.Success(fmt.Sprintf("配置文件验证通过 (%s)", env))
 		},
+	}
+	cmd.Flags().StringP("env", "e", "development", "运行环境 (development/staging/production)")
+	return cmd
+}
+
+func parseEnvironment(envFlag string) config.Environment {
+	switch envFlag {
+	case "development", "dev":
+		return config.Development
+	case "staging":
+		return config.Staging
+	case "production", "prod":
+		return config.Production
+	default:
+		ui.Error(fmt.Sprintf("无效的环境: %s", envFlag))
+		os.Exit(1)
+		return config.Development
 	}
 }

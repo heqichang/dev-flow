@@ -133,24 +133,36 @@ func mergeConfig(base, override *ProjectConfig) {
 		base.Description = override.Description
 	}
 
-	for name, script := range override.Scripts {
-		base.Scripts[name] = script
-	}
-
-	for key, value := range override.Env {
-		base.Env[key] = value
-	}
-
-	for _, env := range override.RequiredEnv {
-		found := false
-		for _, e := range base.RequiredEnv {
-			if e == env {
-				found = true
-				break
-			}
+	if len(override.Scripts) > 0 {
+		if base.Scripts == nil {
+			base.Scripts = make(map[string]Script)
 		}
-		if !found {
-			base.RequiredEnv = append(base.RequiredEnv, env)
+		for name, script := range override.Scripts {
+			base.Scripts[name] = script
+		}
+	}
+
+	if len(override.Env) > 0 {
+		if base.Env == nil {
+			base.Env = make(map[string]string)
+		}
+		for key, value := range override.Env {
+			base.Env[key] = value
+		}
+	}
+
+	if len(override.RequiredEnv) > 0 {
+		for _, env := range override.RequiredEnv {
+			found := false
+			for _, e := range base.RequiredEnv {
+				if e == env {
+					found = true
+					break
+				}
+			}
+			if !found {
+				base.RequiredEnv = append(base.RequiredEnv, env)
+			}
 		}
 	}
 }
