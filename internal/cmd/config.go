@@ -160,6 +160,11 @@ func newConfigSetCmd() *cobra.Command {
 				os.Exit(1)
 			}
 
+			if err := cfg.Validate(); err != nil {
+				ui.Error(fmt.Sprintf("配置验证失败: %v", err))
+				os.Exit(1)
+			}
+
 			if err := config.SaveProjectConfig(&cfg, configPath); err != nil {
 				ui.Error(err.Error())
 				os.Exit(1)
