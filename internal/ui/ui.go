@@ -67,3 +67,7 @@ func ProgressBar(total int, description string) *progressbar.ProgressBar {
 func Prompt(msg string) {
 	fmt.Print(InfoColor("? ") + msg + " ")
 }
+
+func Promptf(format string, a ...interface{}) {
+	fmt.Print(InfoColor("? ") + fmt.Sprintf(format, a...) + " ")
+}

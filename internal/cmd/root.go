@@ -15,7 +15,11 @@ var (
 		Short: "DevFlow - 开发者工作流管理工具",
 		Long: `DevFlow 是一款面向开发者的命令行工作流工具，帮助您：
 - 快速初始化项目
-- 管理项目配置
+- 管理多项目工作区
+- 自动化 Git 工作流
+- 管理开发任务
+- 代码质量检查
+- 依赖管理
 - 运行和管理开发脚本
 - 处理环境变量和密钥`,
 	}
@@ -52,6 +56,11 @@ func init() {
 	rootCmd.AddCommand(newEnvCmd())
 	rootCmd.AddCommand(newConfigCmd())
 	rootCmd.AddCommand(newCompletionCmd())
+	rootCmd.AddCommand(newWorkspaceCmd())
+	rootCmd.AddCommand(newGitCmd())
+	rootCmd.AddCommand(newTaskCmd())
+	rootCmd.AddCommand(newQualityCmd())
+	rootCmd.AddCommand(newDepsCmd())
 	
 	rootCmd.SetVersionTemplate(`{{printf "DevFlow CLI v%s" .Version}}
 `)
