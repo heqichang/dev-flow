@@ -1,0 +1,59 @@
+projectName: my-awesome-project
+version: 1.0.0
+language: javascript
+framework: react
+author: Your Name
+license: MIT
+description: An awesome project built with DevFlow
+
+scripts:
+  dev:
+    command: npm run dev
+    timeout: 0
+  
+  build:
+    command: npm run build
+    timeout: 120
+  
+  test:
+    command: npm test
+    dependsOn:
+      - clean
+    timeout: 60
+  
+  lint:
+    command: npm run lint
+  
+  clean:
+    command: rm -rf dist/
+    env:
+      FORCE: true
+
+env:
+  NODE_ENV: development
+  PORT: 3000
+
+requiredEnv:
+  - API_KEY
+  - DATABASE_URL
+
+environments:
+  development:
+    env:
+      DEBUG: true
+      LOG_LEVEL: debug
+  
+  staging:
+    env:
+      DEBUG: false
+      LOG_LEVEL: info
+  
+  production:
+    env:
+      DEBUG: false
+      LOG_LEVEL: warn
+      NODE_ENV: production
+    scripts:
+      build:
+        command: npm run build -- --mode production
+        timeout: 180
