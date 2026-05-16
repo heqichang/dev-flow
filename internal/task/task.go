@@ -159,7 +159,7 @@ func (tm *TaskManager) Add(title, description string, priority TaskPriority, tag
 		return nil, err
 	}
 
-	return &task, nil
+	return &tm.store.Tasks[len(tm.store.Tasks)-1], nil
 }
 
 func (tm *TaskManager) Get(id int) (*Task, error) {

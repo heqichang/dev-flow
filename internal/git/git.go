@@ -217,8 +217,18 @@ func (g *GitClient) GetRemoteURL(remote string) (string, error) {
 }
 
 func (g *GitClient) GetLog(n int) ([]CommitInfo, error) {
+	return g.GetLogSince("", n)
+}
+
+func (g *GitClient) GetLogSince(sinceTag string, n int) ([]CommitInfo, error) {
 	format := "%H|%s|%an|%ad"
-	args := []string{"log", fmt.Sprintf("-%d", n), fmt.Sprintf("--format=%s", format), "--date=short"}
+	args := []string{"log", fmt.Sprintf("--format=%s", format), "--date=short"}
+	if sinceTag != "" {
+		args = append(args, fmt.Sprintf("%s..HEAD", sinceTag))
+	}
+	if n > 0 {
+		args = append(args, fmt.Sprintf("-%d", n))
+	}
 	output, err := g.runGit(args...)
 	if err != nil {
 		return nil, err

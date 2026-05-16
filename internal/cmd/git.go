@@ -76,7 +76,7 @@ func runGitFlowStart(cmd *cobra.Command, args []string) {
 	case "release":
 		flowType = gitflow.FlowRelease
 	default:
-		ui.Error(fmt.Sprintf("无效的流类型: %s (可用: feature, hotfix, release", flowTypeStr))
+		ui.Error(fmt.Sprintf("无效的流类型: %s (可用: feature, hotfix, release)", flowTypeStr))
 		os.Exit(1)
 	}
 
@@ -89,9 +89,10 @@ func runGitFlowStart(cmd *cobra.Command, args []string) {
 
 func newGitFlowFinishCmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "finish",
+		Use:   "finish [branch-name]",
 		Short: "完成分支",
-		Long: `合并当前功能分支并删除。`,
+		Long: `合并功能分支并删除。如果不指定分支名称，则使用当前分支。`,
+		Args: cobra.MaximumNArgs(1),
 		Run: runGitFlowFinish,
 	}
 
@@ -103,8 +104,13 @@ func newGitFlowFinishCmd() *cobra.Command {
 func runGitFlowFinish(cmd *cobra.Command, args []string) {
 	noDelete, _ := cmd.Flags().GetBool("no-delete")
 
+	branchName := ""
+	if len(args) > 0 {
+		branchName = args[0]
+	}
+
 	gfm := gitflow.NewGitFlowManager()
-	if err := gfm.FinishFlow("", !noDelete); err != nil {
+	if err := gfm.FinishFlow(branchName, !noDelete); err != nil {
 		ui.Error(err.Error())
 		os.Exit(1)
 	}

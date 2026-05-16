@@ -97,37 +97,41 @@ func (g *GitFlowManager) FinishFlow(branchName string, deleteBranch bool) error 
 		return fmt.Errorf("当前目录不是 Git 仓库")
 	}
 
-	currentBranch, err := g.GitClient.GetCurrentBranch()
-	if err != nil {
-		return err
+	sourceBranch := branchName
+	if sourceBranch == "" {
+		currentBranch, err := g.GitClient.GetCurrentBranch()
+		if err != nil {
+			return err
+		}
+		sourceBranch = currentBranch
 	}
 
-	if !strings.HasPrefix(currentBranch, "feature/") &&
-		!strings.HasPrefix(currentBranch, "hotfix/") &&
-		!strings.HasPrefix(currentBranch, "release/") {
-		return fmt.Errorf("当前分支不是功能分支: %s", currentBranch)
+	if !strings.HasPrefix(sourceBranch, "feature/") &&
+		!strings.HasPrefix(sourceBranch, "hotfix/") &&
+		!strings.HasPrefix(sourceBranch, "release/") {
+		return fmt.Errorf("分支 %s 不是功能分支", sourceBranch)
 	}
 
 	var targetBranch string
-	if strings.HasPrefix(currentBranch, "feature/") {
+	if strings.HasPrefix(sourceBranch, "feature/") {
 		targetBranch = "develop"
 	} else {
 		targetBranch = "main"
 	}
 
-	ui.Info(fmt.Sprintf("合并 %s 到 %s", currentBranch, targetBranch))
+	ui.Info(fmt.Sprintf("合并 %s 到 %s", sourceBranch, targetBranch))
 
 	if err := g.GitClient.Checkout(targetBranch); err != nil {
 		return err
 	}
 
-	if err := g.GitClient.Merge(currentBranch); err != nil {
+	if err := g.GitClient.Merge(sourceBranch); err != nil {
 		return err
 	}
 
 	if deleteBranch {
-		ui.Info(fmt.Sprintf("删除分支 %s", currentBranch))
-		if err := g.GitClient.DeleteBranch(currentBranch, true); err != nil {
+		ui.Info(fmt.Sprintf("删除分支 %s", sourceBranch))
+		if err := g.GitClient.DeleteBranch(sourceBranch, true); err != nil {
 			ui.Warning(fmt.Sprintf("删除本地分支失败: %v", err))
 		}
 	}
@@ -241,7 +245,7 @@ func (g *GitFlowManager) GenerateChangelog(sinceTag string) (string, error) {
 		return "", fmt.Errorf("当前目录不是 Git 仓库")
 	}
 
-	commits, err := g.GitClient.GetLog(100)
+	commits, err := g.GitClient.GetLogSince(sinceTag, 0)
 	if err != nil {
 		return "", err
 	}
@@ -256,7 +260,11 @@ func (g *GitFlowManager) GenerateChangelog(sinceTag string) (string, error) {
 	}
 
 	var output strings.Builder
-	output.WriteString(fmt.Sprintf("# Changelog - %s\n\n", time.Now().Format("2006-01-02")))
+	header := "Changelog"
+	if sinceTag != "" {
+		header = fmt.Sprintf("Changelog (since %s)", sinceTag)
+	}
+	output.WriteString(fmt.Sprintf("# %s - %s\n\n", header, time.Now().Format("2006-01-02")))
 
 	typeOrder := []string{"feat", "fix", "docs", "refactor", "perf", "test", "chore"}
 	typeNames := map[string]string{

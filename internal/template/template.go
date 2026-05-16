@@ -28,7 +28,8 @@ func (t *Template) Generate(targetDir string) error {
 	files := t.getTemplateFiles()
 
 	for path, content := range files {
-		fullPath := filepath.Join(targetDir, path)
+		processedPath := t.processTemplate(path)
+		fullPath := filepath.Join(targetDir, processedPath)
 		dir := filepath.Dir(fullPath)
 
 		if err := os.MkdirAll(dir, 0755); err != nil {

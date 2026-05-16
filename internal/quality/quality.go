@@ -58,23 +58,32 @@ func NewQualityManager() (*QualityManager, error) {
 }
 
 func detectLanguage(path string) ProjectLanguage {
-	markers := map[string]ProjectLanguage{
-		"go.mod":       LangGo,
-		"package.json": LangJavaScript,
-		"requirements.txt": LangPython,
-		"setup.py":     LangPython,
-		"Cargo.toml":   LangRust,
-		"pom.xml":      LangJava,
-	}
-
-	for file, lang := range markers {
-		if _, err := os.Stat(filepath.Join(path, file)); err == nil {
-			return lang
-		}
-	}
-
 	if _, err := os.Stat(filepath.Join(path, "tsconfig.json")); err == nil {
 		return LangTypeScript
+	}
+
+	if _, err := os.Stat(filepath.Join(path, "go.mod")); err == nil {
+		return LangGo
+	}
+
+	if _, err := os.Stat(filepath.Join(path, "package.json")); err == nil {
+		return LangJavaScript
+	}
+
+	if _, err := os.Stat(filepath.Join(path, "requirements.txt")); err == nil {
+		return LangPython
+	}
+
+	if _, err := os.Stat(filepath.Join(path, "setup.py")); err == nil {
+		return LangPython
+	}
+
+	if _, err := os.Stat(filepath.Join(path, "Cargo.toml")); err == nil {
+		return LangRust
+	}
+
+	if _, err := os.Stat(filepath.Join(path, "pom.xml")); err == nil {
+		return LangJava
 	}
 
 	return LangUnknown
